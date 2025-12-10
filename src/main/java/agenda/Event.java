@@ -19,6 +19,8 @@ public class Event {
      * The durarion of the event 
      */
     private Duration myDuration;
+    private Repetition myRepetition;
+    
 
 
     /**
@@ -35,33 +37,41 @@ public class Event {
     }
 
     public void setRepetition(ChronoUnit frequency) {
-        // TODO : implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        this.myRepetition = new Repetition(frequency);
     }
 
     public void addException(LocalDate date) {
-        // TODO : implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        if (myRepetition != null) {
+            myRepetition.addException(date);
+        }
     }
 
     public void setTermination(LocalDate terminationInclusive) {
-        // TODO : implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        if (myRepetition != null) {
+            Termination t = new Termination(myStart.toLocalDate(), myRepetition.getFrequency(), terminationInclusive);
+            myRepetition.setTermination(t);
+        }
     }
 
     public void setTermination(long numberOfOccurrences) {
-        // TODO : implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        if (myRepetition != null) {
+            Termination t = new Termination(myStart.toLocalDate(), myRepetition.getFrequency(), numberOfOccurrences);
+            myRepetition.setTermination(t);
+        }
     }
 
     public int getNumberOfOccurrences() {
-        // TODO : implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        if (myRepetition != null && myRepetition.getTermination() != null) {
+            return (int) myRepetition.getTermination().numberOfOccurrences();
+        }
+        return 0;
     }
 
     public LocalDate getTerminationDate() {
-        // TODO : implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        if (myRepetition != null && myRepetition.getTermination() != null) {
+            return myRepetition.getTermination().terminationDateInclusive();
+        }
+        return null;
     }
 
     /**
@@ -71,8 +81,38 @@ public class Event {
      * @return true if the event occurs on that day, false otherwise
      */
     public boolean isInDay(LocalDate aDay) {
-        // TODO : implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        if (myRepetition == null) {
+            // Cas simple sans répétition
+            return checkOverlap(myStart, myStart.plus(myDuration), aDay);
+        } else {
+            if (myRepetition.isException(aDay)) {
+                return false;
+            }
+            ChronoUnit freq = myRepetition.getFrequency();
+            LocalDate startDay = myStart.toLocalDate();
+
+            if (aDay.isBefore(startDay)) return false;
+
+            long amount = freq.between(startDay, aDay);
+
+            for (long k = amount - 1; k <= amount; k++) {
+                if (k < 0) continue;
+                
+                LocalDateTime occStart = myStart.plus(k, freq);
+                LocalDateTime occEnd = occStart.plus(myDuration);
+                
+                if (myRepetition.isValid(occStart.toLocalDate())) {
+                    if (checkOverlap(occStart, occEnd, aDay)) return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    private boolean checkOverlap(LocalDateTime start, LocalDateTime end, LocalDate day) {
+        LocalDateTime dayStart = day.atStartOfDay();
+        LocalDateTime dayEnd = day.plusDays(1).atStartOfDay();
+        return start.isBefore(dayEnd) && end.isAfter(dayStart);
     }
    
     /**

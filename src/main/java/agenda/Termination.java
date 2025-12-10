@@ -6,14 +6,17 @@ import java.time.temporal.Temporal;
 
 public class Termination {
 
+    private final LocalDate start;
+    private final ChronoUnit frequency;
+    private final LocalDate terminationDate;
+    private final long numberOfOccurrences;
+
     public LocalDate terminationDateInclusive() {
-        // TODO : implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        return this.terminationDate;
     }
 
     public long numberOfOccurrences() {
-        // TODO : implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        return this.numberOfOccurrences;
     }
 
 
@@ -30,8 +33,11 @@ public class Termination {
      * @see ChronoUnit#between(Temporal, Temporal)
      */
     public Termination(LocalDate start, ChronoUnit frequency, LocalDate terminationInclusive) {
-        // TODO : implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        this.start = start;
+        this.frequency = frequency;
+        this.terminationDate = terminationInclusive;
+        // La différence entre deux dates ne compte pas la borne supérieure, donc on ajoute 1
+        this.numberOfOccurrences = frequency.between(start, terminationInclusive) + 1;
     }
 
     /**
@@ -46,8 +52,12 @@ public class Termination {
      * @param numberOfOccurrences the number of occurrences of this repetitive event
      */
     public Termination(LocalDate start, ChronoUnit frequency, long numberOfOccurrences) {
-        // TODO : implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        this.start = start;
+        this.frequency = frequency;
+        this.numberOfOccurrences = numberOfOccurrences;
+        // Si 1 occurrence, fin = start. Si 2 occurrences (freq=WEEK), fin = start + 1 semaine.
+        // Donc on ajoute N-1 unités.
+        this.terminationDate = start.plus(numberOfOccurrences - 1, frequency);
     }
 
 }

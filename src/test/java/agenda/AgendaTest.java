@@ -4,8 +4,10 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,6 +71,29 @@ public class AgendaTest {
         assertEquals(4, agenda.eventsInDay(nov_1_2020).size(),
                 "Il y a 4 événements ce jour là");
         assertTrue(agenda.eventsInDay(nov_1_2020).contains(neverEnding));
+    }
+
+    @Test
+    public void testIsFreeFor() {
+        Event freeEvent = new Event("Free slot", LocalDateTime.of(2020, 11, 2, 10, 0), Duration.ofHours(1));
+        assertTrue(agenda.isFreeFor(freeEvent), "L'agenda devrait être libre pour cet horaire");
+
+        Event busyEventStart = new Event("Busy Start", LocalDateTime.of(2020, 11, 1, 23, 0), Duration.ofHours(1));
+        assertFalse(agenda.isFreeFor(busyEventStart), "L'agenda ne devrait pas être libre (chevauchement début)");
+
+        Event busyEncompassing = new Event("Encompassing", LocalDateTime.of(2020, 11, 1, 22, 0), Duration.ofHours(3));
+        assertFalse(agenda.isFreeFor(busyEncompassing), "L'agenda ne devrait pas être libre (englobement)");
+    }
+
+    @Test
+    public void testFindByTitle() {
+        List<Event> found = agenda.findByTitle("Simple event");
+        
+        assertEquals(1, found.size(), "On devrait trouver 1 événement avec ce titre");
+        assertEquals(simple, found.get(0), "L'événement trouvé doit être celui ajouté");
+        
+        assertTrue(agenda.findByTitle("Titre Inconnu").isEmpty(), 
+            "La liste doit être vide si le titre n'existe pas");
     }
 
 }

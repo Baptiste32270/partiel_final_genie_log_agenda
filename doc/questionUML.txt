@@ -1,2 +1,24 @@
-Ecrire ici votre réponse à la question UML.
+COMPARAISON DES MODÈLES UML
 
+1. ANALYSE DU MODÈLE 1 (Figure 2)
+Ce modèle est basé sur le principe de "Composition" (ou agrégation). Une classe `Event` "possède" optionnellement une `Repetition`, qui elle-même "possède" optionnellement une `Termination`.
+
+Avantages :
+- On peut transformer un événement simple en événement répétitif (et inversement) à la volée, simplement en définissant ou supprimant l'attribut `repetition` sur l'instance existante. Pas besoin de recréer l'objet.
+- Si nous devions ajouter d'autres comportements, nous ajouterions simplement des composants. Avec l'héritage, nous aurions besoin de combinaisons complexes.
+- La logique de calcul des dates de répétition est encapsulée dans la classe `Repetition`, et non mélangée aux données de l'événement principal.
+
+Inconvénients :
+- Nécessite des vérifications (`if (repetition != null)`) dans les méthodes de `Event` pour déléguer le comportement.
+
+2. ANALYSE DU MODÈLE 2 (Figure 3)
+
+Ce modèle est basé sur le principe d' "Héritage". Un `RepetitiveEvent` EST UN `Event`. Un `FixedTerminationEvent` EST UN `RepetitiveEvent`.
+
+Avantages :
+- Le code est souvent plus "propre" concernant la méthode `isInDay()`. Chaque sous-classe implémente sa propre version. On élimine les `if/else` et les vérifications de nullité.
+- On sait explicitement quel type d'événement on manipule grâce au type de la classe.
+
+Inconvénients :
+- Une fois un objet instancié, il ne peut pas changer de classe. Si l'utilisateur décide qu'un événement simple doit devenir répétitif, le système doit détruire l'instance `Event` et créer une nouvelle instance `RepetitiveEvent` en copiant les données.
+- `FixedTerminationEvent` hérite de `RepetitiveEvent`. Cela suppose qu'une terminaison fixe n'a de sens QUE pour un événement répétitif (ce qui est vrai ici), mais cela verrouille la structure. Si on veut ajouter un autre type de variation (ex: répétition complexe "tous les 3 jours"), on risque de complexifier l'arbre d'héritage.
